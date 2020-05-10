@@ -1,0 +1,35 @@
+<?php
+include ('../db/connection.php');
+include ('../db/MediaFile.php');
+try{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $con = OpenConnection();
+        $genre = json_decode(file_get_contents('php://input'), true)['genre'];
+        if($genre !== false && $genre !== "choose genre"){
+            $sql = sprintf("SELECT * FROM multimedia.media WHERE Genre = '%s'", $genre);
+        }
+        else{
+            $sql = "SELECT * FROM multimedia.media";
+        }
+        $result_set = $con->query($sql);
+        $rows = array();
+        while ($row = mysqli_fetch_array($result_set)) {
+            $rows[] = new MediaFile($row['id'],$row['title'],$row['format'],$row['genre'],$row['location']);
+
+        }
+        header('HTTP/1.1 200 OK');
+        echo json_encode($rows);
+        CloseConnection($con);
+        exit;
+    }
+} catch (Exception $e) {
+    echo json_encode(
+        array(
+            'status' => false,
+            'error' => $e->getMessage(),
+            'error_code' => $e->getCode()
+        )
+    );
+
+    exit;
+}
