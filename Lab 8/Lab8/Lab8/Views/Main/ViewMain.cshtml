@@ -1,0 +1,282 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ViewFiles</title>
+    <style>
+
+        body {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        table {
+            margin: 0 auto;
+        }
+
+        td {
+            border: 1px solid black;
+        }
+    </style>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script language="javascript">function printAllFiles(files)
+    {
+    var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+            for (var file of files) {
+                console.log(file);
+                let deleteName = "delete-file-" + file.Id + "-btn";
+                content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
+                    "<td>" + file.Id + "</td>" +
+                    "<td>" + file.Title+ "</td>" +
+                    "<td>" + file.Genre + "</td>" +
+                    "<td>" + file.Format + "</td>" +
+                    "<td>" + file.Location + "</td>" +
+
+                    "</tr>";
+            }
+
+            content += "</table>";
+            $("#files").html(content);
+        }
+
+        function updateGenreFilter(genre) {
+            var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+            var files = [];
+            $.getJSON(
+                "Main/GetFilesOfGenre",
+                { Genre: genre },
+                function (data, status) {
+                    files = data["files"];
+                    console.log(files);
+                    for (var file of files) {
+                        console.log(file);
+                        let deleteName = "delete-file-" + file.Id + "-btn";
+                        content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
+                            "<td>" + file.Id + "</td>" +
+                            "<td>" + file.Title + "</td>" +
+                            "<td>" + file.Genre + "</td>" +
+                            "<td>" + file.Format + "</td>" +
+                            "<td>" + file.Location + "</td>" +
+
+                            "</tr>";
+                    }
+                    content += "</table>";
+                    $("#files").html(content);
+                }
+            );
+
+        }
+
+
+        function updateFormatFilter(format) {
+            var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+            var files = [];
+            $.getJSON(
+                "Main/GetFilesOfFormat",
+                { Format: format },
+                function (data, status) {
+                    files = data["files"];
+                    console.log(files);
+                    for (var file of files) {
+                        console.log(file);
+                        let deleteName = "delete-file-" + file.Id + "-btn";
+                        content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
+                            "<td>" + file.Id + "</td>" +
+                            "<td>" + file.Title + "</td>" +
+                            "<td>" + file.Genre + "</td>" +
+                            "<td>" + file.Format + "</td>" +
+                            "<td>" + file.Location + "</td>" +
+
+                            "</tr>";
+                    }
+                    content += "</table>";
+                    $("#files").html(content);
+                }
+            );
+
+        }
+
+        function printAllGenres(genres) {
+            var content = "<option value=none>...</option>";
+            for (var genre of genres) {
+                content += "<option value=" + genre + ">" + genre + "</option>";
+            }
+            $("#genre").html(content);
+            $("#genre").on('change', function (e) {
+                var optionSelected = $("option:selected", this);
+                console.log(optionSelected);
+                updateGenreFilter(String(this.value));
+            });
+        }
+
+        function printAllFormats(formats) {
+            var content = "<option value=none>...</option>";
+            for (var format of formats) {
+                content += "<option value=" + format + ">" + format + "</option>";
+            }
+            $("#format").html(content);
+            $("#format").on('change', function (e) {
+                var optionSelected = $("option:selected", this);
+                console.log(optionSelected);
+                updateFormatFilter(String(this.value));
+            });
+        }
+
+        function setDeleteButtons(files) {
+            for (const file of files) {
+                let buttonId = "#delete-file-" + file.Id + "-btn";
+                console.log(buttonId);
+                $(buttonId).click(function () {
+                    if (confirm("Are you sure you want to delete the file with id " + file.Id + "?")) {
+                        $.post("/Main/DeleteFile", {
+                            id: file.Id
+                        },
+                            function (data, status) {
+                                if (data["success"] === true) {
+                                    location.reload();
+                                }
+                                else {
+                                    alert("couldn't delete");
+                                }
+                            }
+                        );
+                    }
+                    else {
+
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function () {
+            console.log(sessionStorage["currentUser"])
+            if (JSON.parse(sessionStorage["currentUser"]) !== null){
+
+                Array.prototype.pushArray = function (arr) {
+                    this.push.apply(this, arr);
+                };
+
+                let crtUser = sessionStorage["currentUser"];
+                console.log(crtUser);
+                let username = JSON.parse(crtUser).username;
+                $("#user").html("Welcome <b>" + username + "</b>");
+
+                var files = [];
+                $(function () {
+                    $.getJSON(
+                        "/Main/GetFiles", {}, function (data, status) {
+                            files.pushArray(data["files"]);
+                            printAllFiles(files);
+                            setDeleteButtons(files);
+                        }
+                    )
+                });
+
+                var genres = [];
+                $(function () {
+                    $.getJSON(
+                        "/Main/GetGenres", {}, function (data, status) {
+                            genres.pushArray(data["genres"]);
+                            console.log(genres);
+                            printAllGenres(genres);
+                        }
+                    )
+                });
+
+                var formats = [];
+                $(function () {
+                    $.getJSON(
+                        "/Main/GetFormats", {}, function (data, status) {
+                            formats.pushArray(data["formats"]);
+                            console.log(formats);
+                            printAllFormats(formats);
+                        }
+                    )
+                });
+
+                $("#add-btn").click(function () {
+                    var format = $("#format-input").val();
+                    var genre = $("#genre-input").val();
+                    var locationInp = $("#location-input").val();
+                    var title = $("#title-input").val();
+                    if (format === "" || genre === "" || title === "" || locationInp === "") {
+                        alert("Incorrect inputs- please don't leave them empty");
+                        return;
+                    }
+                    $.post("Main/SaveFile",
+                        { title : title, format: format, genre: genre, location: locationInp },
+                        function (data, status) {
+                            if (data["success"] === true) {
+                                location.reload();
+                            }
+                            else {
+                                alert("Insert operation failed..");
+                            }
+                        }
+                    )
+                });
+                $("#update-btn").click(function () {
+                    var format = $("#format-input").val();
+                    var genre = $("#genre-input").val();
+                    var locationInp = $("#location-input").val();
+                    var title = $("#title-input").val();
+                    var id = $("#id-input").val();
+                    if (format === "" || genre === "" || title === "" || locationInp === "" || id==="") {
+                        alert("Incorrect inputs- please don't leave them empty");
+                        return;
+                    }
+                    $.post("Main/UpdateFile",
+                        { title: title, format: format, genre: genre, location: locationInp, id:id },
+                        function (data, status) {
+                            if (data["success"] === true) {
+                                location.reload();
+                            }
+                            else {
+                                alert("Update operation failed..");
+                            }
+                        }
+                    )
+                });
+
+
+            }
+           else{
+                location.href = 'Login';
+            }
+        });</script>
+</head>
+<body>
+    <a href="/Menu">Home</a>
+    <p id="user" style="text-align:center"></p>
+    <div class="main-div">
+        <section id="files"></section>
+        <p>Filter by genre</p>
+        <div>
+            <select id="genre"></select>
+            <section id="genre-list"></section>
+        </div>
+        <p>Filter by format</p>
+        <select id="format"></select>
+        <section id="format-list"></section>
+    </div>
+    <p>Add a file</p>
+    <form >
+        <input type="text" placeholder="id" id="id-input" />
+        <input type="text" placeholder="title" id="title-input" />
+        <input type="text" placeholder="genre" id="genre-input" />
+        <input type="text" placeholder="format" id="format-input" />
+        <input type="text" placeholder="location" id="location-input" />
+        <button type="button" id="add-btn">Add</button>
+        <button type="button" id="update-btn">Update</button>
+    </form>
+</body>
+
+</html>
