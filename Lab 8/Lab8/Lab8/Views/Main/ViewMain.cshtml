@@ -29,12 +29,14 @@
     <script src="~/Scripts/jquery-3.3.1.js"></script>
     <script language="javascript">function printAllFiles(files)
     {
-    var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+    var content = "<table><tr><th>Delete</th><th>Update</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr> ";
             for (var file of files) {
                 console.log(file);
                 let deleteName = "delete-file-" + file.Id + "-btn";
+                let updateName = "update-file-" + file.Id + "-btn";
                 content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
-                    "<td>" + file.Id + "</td>" +
+                    "<td><button type=\"button\" id=\"" + updateName + "\">Update</button></td>"+
+                    //"<td>" + file.Id + "</td>" +
                     "<td>" + file.Title+ "</td>" +
                     "<td>" + file.Genre + "</td>" +
                     "<td>" + file.Format + "</td>" +
@@ -48,7 +50,7 @@
         }
 
         function updateGenreFilter(genre) {
-            var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+            var content = "<table><tr><th>Delete</th><th>Update</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr> ";
             var files = [];
             $.getJSON(
                 "Main/GetFilesOfGenre",
@@ -59,8 +61,9 @@
                     for (var file of files) {
                         console.log(file);
                         let deleteName = "delete-file-" + file.Id + "-btn";
+                        let updateName = "update-file-" + file.Id + "-btn";
                         content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
-                            "<td>" + file.Id + "</td>" +
+                            "<td><button type=\"button\" id=\"" + updateName + "\">Update</button></td>" +
                             "<td>" + file.Title + "</td>" +
                             "<td>" + file.Genre + "</td>" +
                             "<td>" + file.Format + "</td>" +
@@ -77,7 +80,7 @@
 
 
         function updateFormatFilter(format) {
-            var content = "<table><tr><th></th><th>Id</th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
+            var content = "<table><tr><th></th><th>Title</th><th>Genre</th><th>Format</th><th>Location</th></tr > ";
             var files = [];
             $.getJSON(
                 "Main/GetFilesOfFormat",
@@ -88,8 +91,9 @@
                     for (var file of files) {
                         console.log(file);
                         let deleteName = "delete-file-" + file.Id + "-btn";
+                        let updateName = "update-file-" + file.Id + "-btn";
                         content += "<tr>" + "<td><button type=\"button\" id=\"" + deleteName + "\">Delete</button></td>" +
-                            "<td>" + file.Id + "</td>" +
+                            "<td><button type=\"button\" id=\"" + updateName + "\">Update</button></td>" +
                             "<td>" + file.Title + "</td>" +
                             "<td>" + file.Genre + "</td>" +
                             "<td>" + file.Format + "</td>" +
@@ -135,7 +139,7 @@
                 let buttonId = "#delete-file-" + file.Id + "-btn";
                 console.log(buttonId);
                 $(buttonId).click(function () {
-                    if (confirm("Are you sure you want to delete the file with id " + file.Id + "?")) {
+                    if (confirm("Are you sure you want to delete the file with title " + file.Title+ "?")) {
                         $.post("/Main/DeleteFile", {
                             id: file.Id
                         },
@@ -151,6 +155,40 @@
                     }
                     else {
 
+                    }
+                });
+            }
+        }
+
+        function setUpdateButtons(files) {
+            for (const file of files) {
+                let buttonId = "#update-file-" + file.Id + "-btn";
+                console.log(buttonId);
+                $(buttonId).click(function () {
+                    var format = $("#format-input").val();
+                    var genre = $("#genre-input").val();
+                    var locationInp = $("#location-input").val();
+                    var title = $("#title-input").val();
+                    if (format === "" || genre === "" || title === "" || locationInp === "" ) {
+                        alert("Incorrect inputs- please don't leave them empty");
+                    }
+                    else {
+                        if (confirm("Are you sure you want to update the file with title " + file.Title + "?")) {
+                            $.post("Main/UpdateFile",
+                                { title: title, format: format, genre: genre, location: locationInp, id: file.Id },
+                                function (data, status) {
+                                    if (data["success"] === true) {
+                                        location.reload();
+                                    }
+                                    else {
+                                        alert("Update operation failed..");
+                                    }
+                                }
+                            )
+                        }
+                        else {
+
+                        }
                     }
                 });
             }
@@ -176,6 +214,7 @@
                             files.pushArray(data["files"]);
                             printAllFiles(files);
                             setDeleteButtons(files);
+                            setUpdateButtons(files);
                         }
                     )
                 });
@@ -187,6 +226,7 @@
                             genres.pushArray(data["genres"]);
                             console.log(genres);
                             printAllGenres(genres);
+                      
                         }
                     )
                 });
@@ -198,6 +238,7 @@
                             formats.pushArray(data["formats"]);
                             console.log(formats);
                             printAllFormats(formats);
+                            
                         }
                     )
                 });
@@ -223,6 +264,7 @@
                         }
                     )
                 });
+                /*
                 $("#update-btn").click(function () {
                     var format = $("#format-input").val();
                     var genre = $("#genre-input").val();
@@ -244,7 +286,7 @@
                             }
                         }
                     )
-                });
+                });*/
 
 
             }
@@ -269,13 +311,11 @@
     </div>
     <p>Add a file</p>
     <form >
-        <input type="text" placeholder="id" id="id-input" />
         <input type="text" placeholder="title" id="title-input" />
         <input type="text" placeholder="genre" id="genre-input" />
         <input type="text" placeholder="format" id="format-input" />
         <input type="text" placeholder="location" id="location-input" />
         <button type="button" id="add-btn">Add</button>
-        <button type="button" id="update-btn">Update</button>
     </form>
 </body>
 

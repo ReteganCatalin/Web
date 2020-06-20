@@ -236,17 +236,17 @@ namespace Lab8.Communication_Layer
         }
 
         public bool DeleteFile(int id)
-            {
-                MySqlCommand cmd = new MySqlCommand();
-                MySqlConnection conn = getConnection();
-                conn.Open();
-                cmd.Connection = conn;
-                cmd.CommandText = "DELETE FROM media WHERE media_id=" + id;
-                System.Diagnostics.Debug.WriteLine(cmd.CommandText);
-                int cnt = cmd.ExecuteNonQuery();
-                conn.Close();
-                return cnt == 1;
-            }
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            MySqlConnection conn = getConnection();
+            conn.Open();
+            cmd.Connection = conn;
+            cmd.CommandText = "DELETE FROM media WHERE media_id=" + id;
+            System.Diagnostics.Debug.WriteLine(cmd.CommandText);
+            int cnt = cmd.ExecuteNonQuery();
+            conn.Close();
+            return cnt == 1;
+        }
 
            
         
