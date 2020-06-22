@@ -1,0 +1,163 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AssetsView</title>
+    <style>
+
+        body {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        table {
+            margin: 0 auto;
+        }
+
+        td {
+            border: 1px solid black;
+        }
+    </style>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script language="javascript">
+function printAllAssets(assets)
+    {
+    var content = "<table><tr><th>Name</th><th>Description</th><th>Value</th></tr> ";
+            for (var asset of assets) {
+                console.log(asset);
+                if (asset.Value >= 10) {
+                    content += "<tr bgcolor='red'>";
+                }
+                else {
+                    content += "<tr>";
+                }
+                content +=  
+                    "<td>" + asset.Name + "</td>" +
+                    "<td>" + asset.Description + "</td>" +
+                    "<td>" + asset.Value + "</td>" +
+                    "</tr>";
+            }
+
+            content += "</table>";
+            $("#assetData").html(content);
+        }
+
+       
+
+
+        $(document).ready(function () {
+            console.log(sessionStorage["currentUser"])
+            if (JSON.parse(sessionStorage["currentUser"]) !== null){
+
+                Array.prototype.pushArray = function (arr) {
+                    this.push.apply(this, arr);
+                };
+
+
+                var assets = [];
+                $(function () {
+                    $.getJSON(
+                        "/Asset/GetAssets", {}, function (data, status) {
+                            assets.pushArray(data["assets"]);
+                            printAllAssets(assets);
+                        }
+                    )
+                });
+
+
+                $("#addList").click(function () {
+                    addAssetToList();
+                    updateHistory();
+                });
+                $("#sendList").click(function () {
+                    submitAdd();
+                });
+
+                names = [];
+                descriptions = [];
+                values = [];
+
+                function clearInputs() {
+                    $("#name").val("");
+                    $("#description").val("");
+                    $("#value").val("");
+                }
+                function updateHistory() {
+                    tableString = "<table border='1'><tr><th>Name to add</th><th>Description to add</th><th>Value to add</th></tr>"
+                    for (var i = 0; i < names.length; ++i) {
+                        var name = names[i];
+                        var description = descriptions[i];
+                        var value = values[i];
+                        tableString += "<tr>";
+                        tableString += "<td>" + name + "</td>";
+                        tableString += "<td>" + description + "</td>";
+                        tableString += "<td>" + value + "</td>";
+                        tableString += "</tr>";
+                    }
+                    tableString += "</table>";
+                    $("#history").html(tableString);
+                }
+                function clearHistory() {
+                    $("#history").html("");
+                }
+                function addAssetToList() {
+                    var name = $("#name").val();
+                    var description = $("#description").val();
+                    var value = $("#value").val();
+                    console.log(name, description, value);
+                    clearInputs();
+                    names.push(name);
+                    descriptions.push(description);
+                    values.push(value);
+                }
+                function submitAdd() {
+                    $.post(
+                        "Asset/SaveAssets",
+                        {
+                            names: JSON.stringify(names),
+                            descriptions: JSON.stringify(descriptions),
+                            values: JSON.stringify(values)
+                        },
+                        function (data) {
+                            console.log("success submit");
+                            clearHistory();
+                            location.href = 'Asset';
+                        }
+                    );
+                }
+             
+            }
+           else{
+                location.href = 'Login';
+            }
+        });</script>
+</head>
+<body>
+
+    <p>Add an asset</p>
+    <section id="assetData"></section>
+    <br>
+    <input placeholder="name" id="name" />
+    <br>
+    <input placeholder="description" id="description" />
+    <br>
+    <input placeholder="value" id="value" />
+    <br>
+    <button id="addList">Add to list</button>
+    <br>
+    <button id="sendList">Submit all added assets</button>
+    <br>
+    <br>
+    History <br>
+    <section id="history"></section>
+</body>
+
+</html>
