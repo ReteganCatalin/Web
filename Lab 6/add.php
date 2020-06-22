@@ -1,7 +1,8 @@
+<!DOCTYPE html>
+<html>
 <?php
 if(isset($_POST['submit'])) {
     include('db/connection.php');
-    $id = $_POST['id'];
     $title = $_POST['title'];
     $genre = $_POST['genre'];
     $location = $_POST['location'];
@@ -9,23 +10,25 @@ if(isset($_POST['submit'])) {
 
 
     $con = OpenConnection();
-    $sql = "INSERT into multimedia.media values(" . $id . ",'" . $title .",'".$format .",'".$genre.",'".$location.")" ;
-    $query = mysqli_query($con, $sql);
+    $sql = "INSERT into multimedia.media (title,format,genre,location) values('" . $title ."','".$format ."','".$genre."','".$location."')" ;
+    $con->query($sql);
+    if ($con->affected_rows == 1) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $sql . "<br>" . $con->error;
+    }
+
 
     CloseConnection($con);
 }
-
 ?>
-<!DOCTYPE html>
-<html>
 <head>
+	<meta charset="UTF-8">
     <title>Add File</title>
 </head>
 <body>
 <h1>ADD FILE</h1>
 <form method="post" action="add.php">
-    <input type="text" name = "id" placeholder="Enter id">
-    <br>
     <input type="text" name="title" placeholder="Enter title">
     <br>
     <input type="text" name = "genre" placeholder="Enter genre">

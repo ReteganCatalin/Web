@@ -1,7 +1,7 @@
 <?php
 
 
-class MediaFile implements JsonSerializable
+class MediaFile 
 {
     public $id;
     public $title;
@@ -24,12 +24,6 @@ class MediaFile implements JsonSerializable
         $this->format = $format;
         $this->genre = $genre;
         $this->location = $location;
-    }
-
-    public function jsonSerialize()
-    {
-        $vars=json_encode(this);
-        return $vars;
     }
 
 
